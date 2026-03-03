@@ -2,11 +2,27 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+
+const authRoutes = require('./routes/auth');
+const customerRoutes = require('./routes/customers');
+const foodItemRoutes = require('./routes/foodItems');
+const orderRoutes = require('./routes/orders');
+const supplierRoutes = require('./routes/suppliers');
+const stockRoutes = require('./routes/stock');
+const reportRoutes = require('./routes/reports');
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// TODO: Add routes for auth, customers, food items, orders, suppliers, stock, reports
+// API routes
+app.use('/api/auth', authRoutes);
+app.use('/api/customers', customerRoutes);
+app.use('/api/food-items', foodItemRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/suppliers', supplierRoutes);
+app.use('/api/stock', stockRoutes);
+app.use('/api/reports', reportRoutes);
 
 app.get('/', (req, res) => res.send('Canteen Management Backend Running'));
 
