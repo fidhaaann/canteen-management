@@ -1,0 +1,2 @@
+-- MySQL schema for Canteen Management System
+-- This file will include tables, constraints, triggers, and sample data
