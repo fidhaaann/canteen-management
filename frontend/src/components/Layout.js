@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import {
   AppBar, Toolbar, Typography, Drawer, List, ListItemButton, ListItemIcon,
@@ -35,6 +35,10 @@ export default function Layout() {
 
   const [drawerOpen, setDrawerOpen] = useState(!isMobile);
   const [anchorEl, setAnchorEl] = useState(null);
+
+  useEffect(() => {
+    setDrawerOpen(!isMobile);
+  }, [isMobile]);
 
   const handleNavClick = (path) => {
     navigate(path);
@@ -102,8 +106,12 @@ export default function Layout() {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         sx={{
-          width: DRAWER_WIDTH,
+          width: !isMobile && drawerOpen ? DRAWER_WIDTH : 0,
           flexShrink: 0,
+          transition: theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
           '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box' },
         }}
       >
