@@ -170,7 +170,7 @@ CREATE OR REPLACE VIEW v_daily_sales AS
 SELECT
   DATE(o.order_date) AS sale_date,
   COUNT(o.id) AS total_orders,
-  SUM(o.total_amount) AS total_revenue
+  SUM(o.total_amoun`t) AS total_revenue
 FROM orders o
 WHERE o.status != 'cancelled'
 GROUP BY DATE(o.order_date)
