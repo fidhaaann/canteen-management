@@ -56,7 +56,7 @@ export default function Reports() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="sale_date" tickFormatter={(d) => new Date(d).toLocaleDateString('en', { month: 'short', day: 'numeric' })} />
                     <YAxis />
-                    <ReTooltip formatter={(val) => `$${Number(val).toFixed(2)}`} />
+                    <ReTooltip formatter={(val) => `₹${Number(val).toFixed(2)}`} />
                     <Bar dataKey="total_revenue" fill="#4CAF50" name="Revenue" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -74,13 +74,13 @@ export default function Reports() {
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie data={categorySales} dataKey="revenue" nameKey="name" cx="50%" cy="50%"
-                      outerRadius={100} label={(e) => `$${e.revenue.toFixed(0)}`}>
+                      outerRadius={100} label={(e) => `₹${e.revenue.toFixed(0)}`}>
                       {categorySales.map((_, i) => (
                         <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                       ))}
                     </Pie>
                     <Legend />
-                    <ReTooltip formatter={(val) => `$${Number(val).toFixed(2)}`} />
+                    <ReTooltip formatter={(val) => `₹${Number(val).toFixed(2)}`} />
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -110,7 +110,7 @@ export default function Reports() {
                           <TableCell sx={{ fontWeight: 600 }}>{item.name}</TableCell>
                           <TableCell>{categoryLabels[item.category] || item.category}</TableCell>
                           <TableCell>{item.times_ordered}x</TableCell>
-                          <TableCell>${Number(item.revenue).toFixed(2)}</TableCell>
+                          <TableCell>₹{Number(item.revenue).toFixed(2)}</TableCell>
                         </TableRow>
                       ))}
                       {topItems.length === 0 && (
@@ -146,7 +146,7 @@ export default function Reports() {
                           <TableCell sx={{ fontWeight: 600 }}>{c.name}</TableCell>
                           <TableCell>{c.email || '-'}</TableCell>
                           <TableCell>{c.total_orders}</TableCell>
-                          <TableCell>${Number(c.total_spent).toFixed(2)}</TableCell>
+                          <TableCell>₹{Number(c.total_spent).toFixed(2)}</TableCell>
                         </TableRow>
                       ))}
                       {topCustomers.length === 0 && (

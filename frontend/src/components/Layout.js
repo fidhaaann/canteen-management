@@ -35,10 +35,75 @@ export default function Layout() {
 
   const [drawerOpen, setDrawerOpen] = useState(!isMobile);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     setDrawerOpen(!isMobile);
   }, [isMobile]);
+
+  useEffect(() => {
+    const updateScrollProgress = () => {
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      if (total <= 0) {
+        setScrollProgress(0);
+        return;
+      }
+      setScrollProgress((window.scrollY / total) * 100);
+    };
+
+    updateScrollProgress();
+    window.addEventListener('scroll', updateScrollProgress, { passive: true });
+    return () => window.removeEventListener('scroll', updateScrollProgress);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const selector = '.MuiCard-root, .MuiPaper-root, .MuiTableContainer-root, .MuiDialog-paper';
+    const tracked = new Set();
+
+    const applyRevealClass = (node) => {
+      if (!(node instanceof HTMLElement)) return;
+      if (!node.matches(selector)) return;
+      if (tracked.has(node)) return;
+      tracked.add(node);
+      node.classList.add('scroll-reveal');
+      observer.observe(node);
+    };
+
+    const scan = () => {
+      document.querySelectorAll(selector).forEach((el) => applyRevealClass(el));
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) entry.target.classList.add('in-view');
+        });
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -8% 0px' }
+    );
+
+    const domObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (!(node instanceof HTMLElement)) return;
+          applyRevealClass(node);
+          node.querySelectorAll?.(selector).forEach((child) => applyRevealClass(child));
+        });
+      });
+    });
+
+    scan();
+    domObserver.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      tracked.forEach((el) => {
+        observer.unobserve(el);
+        el.classList.remove('scroll-reveal', 'in-view');
+      });
+      domObserver.disconnect();
+      observer.disconnect();
+    };
+  }, [location.pathname]);
 
   const handleNavClick = (path) => {
     navigate(path);
@@ -53,10 +118,15 @@ export default function Layout() {
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Restaurant sx={{ color: 'primary.main', fontSize: 32 }} />
-          <Typography variant="h6" sx={{ fontWeight: 800, color: 'primary.main' }}>
-            Canteen
-          </Typography>
+          <Restaurant sx={{ color: 'primary.main', fontSize: 34 }} />
+          <Box>
+            <Typography variant="h6" sx={{ color: 'primary.main', lineHeight: 1.1 }}>
+              Retro Bites
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>
+              Canteen Control Room
+            </Typography>
+          </Box>
         </Box>
         {isMobile && (
           <IconButton onClick={() => setDrawerOpen(false)}>
@@ -71,16 +141,6 @@ export default function Layout() {
             key={item.text}
             onClick={() => handleNavClick(item.path)}
             selected={location.pathname === item.path}
-            sx={{
-              borderRadius: 2,
-              mb: 0.5,
-              '&.Mui-selected': {
-                backgroundColor: 'primary.main',
-                color: '#fff',
-                '& .MuiListItemIcon-root': { color: '#fff' },
-                '&:hover': { backgroundColor: 'primary.dark' },
-              },
-            }}
           >
             <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
             <ListItemText primary={item.text} />
@@ -100,7 +160,21 @@ export default function Layout() {
   );
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box className="page-shell" sx={{ display: 'flex', minHeight: '100vh' }}>
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          height: 4,
+          width: `${scrollProgress}%`,
+          background: 'linear-gradient(90deg, #F2A53D 0%, #C64B33 60%, #EA7A58 100%)',
+          zIndex: (t) => t.zIndex.tooltip + 1,
+          transition: 'width 0.18s ease-out',
+          boxShadow: '0 2px 12px rgba(198, 75, 51, 0.55)',
+        }}
+      />
+
       <Drawer
         variant={isMobile ? 'temporary' : 'persistent'}
         open={drawerOpen}
@@ -131,12 +205,36 @@ export default function Layout() {
             <IconButton edge="start" onClick={() => setDrawerOpen(!drawerOpen)} sx={{ mr: 2 }}>
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" sx={{ flexGrow: 1, color: 'text.primary', fontWeight: 600 }}>
-              {filteredMenuItems.find((i) => i.path === location.pathname)?.text || 'Canteen Management'}
-            </Typography>
-            <IconButton onClick={toggleTheme} sx={{ mr: 1 }}>
-              {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
-            </IconButton>
+            <Box sx={{ flexGrow: 1 }}>
+              <Typography variant="h6" sx={{ color: 'text.primary' }}>
+                {filteredMenuItems.find((i) => i.path === location.pathname)?.text || 'Canteen Management'}
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.3, flexWrap: 'wrap' }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 800, letterSpacing: '0.08em' }}>
+                  Fresh. Fast. Flavorful.
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    px: 0.8,
+                    py: 0.2,
+                    borderRadius: 1,
+                    border: '1px dashed',
+                    borderColor: 'primary.main',
+                    fontFamily: "'JetBrains Mono', monospace",
+                    color: 'primary.dark',
+                    bgcolor: 'rgba(255,255,255,0.3)',
+                  }}
+                >
+                  {`route:${location.pathname}`}
+                </Typography>
+              </Box>
+            </Box>
+            <Box className="retro-toggle" sx={{ mr: 1 }}>
+              <IconButton onClick={toggleTheme} aria-label="toggle theme" size="small">
+                {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
+              </IconButton>
+            </Box>
             <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
               <Avatar sx={{ bgcolor: 'primary.main', width: 36, height: 36, fontSize: 16 }}>
                 {user?.fullName?.[0] || 'U'}
@@ -158,7 +256,7 @@ export default function Layout() {
           </Toolbar>
         </AppBar>
 
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ p: { xs: 2, md: 3 } }}>
           <Outlet />
         </Box>
       </Box>

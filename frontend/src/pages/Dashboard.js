@@ -10,12 +10,12 @@ import {
 import api from '../api';
 
 const statCards = [
-  { key: 'totalCustomers', label: 'Customers', icon: <People />, color: '#2196F3' },
-  { key: 'totalFoodItems', label: 'Food Items', icon: <Restaurant />, color: '#4CAF50' },
-  { key: 'totalOrders', label: 'Orders', icon: <ShoppingCart />, color: '#FF9800' },
-  { key: 'totalRevenue', label: 'Revenue', icon: <AttachMoney />, color: '#9C27B0', prefix: '$' },
-  { key: 'pendingOrders', label: 'Pending', icon: <Pending />, color: '#F44336' },
-  { key: 'lowStockCount', label: 'Low Stock', icon: <Warning />, color: '#E91E63' },
+  { key: 'totalCustomers', label: 'Customers', icon: <People />, color: '#D27A2E' },
+  { key: 'totalFoodItems', label: 'Food Items', icon: <Restaurant />, color: '#3B7A57' },
+  { key: 'totalOrders', label: 'Orders', icon: <ShoppingCart />, color: '#C64B33' },
+  { key: 'totalRevenue', label: 'Revenue', icon: <AttachMoney />, color: '#8B5A3C', prefix: '₹' },
+  { key: 'pendingOrders', label: 'Pending', icon: <Pending />, color: '#B9442C' },
+  { key: 'lowStockCount', label: 'Low Stock', icon: <Warning />, color: '#B57D2F' },
 ];
 
 const statusColor = {
@@ -103,7 +103,7 @@ export default function Dashboard() {
               <TableRow key={order.order_id} hover>
                 <TableCell>#{order.order_id}</TableCell>
                 <TableCell>{order.customer_name || 'Walk-in'}</TableCell>
-                <TableCell>${Number(order.total_amount).toFixed(2)}</TableCell>
+                <TableCell>₹{Number(order.total_amount).toFixed(2)}</TableCell>
                 <TableCell>
                   <Chip label={order.status} color={statusColor[order.status]} size="small" />
                 </TableCell>

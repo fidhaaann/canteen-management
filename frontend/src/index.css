@@ -1,4 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bungee&family=JetBrains+Mono:wght@500;700&family=Nunito:wght@400;600;700;800;900&display=swap');
+
+:root {
+  --retro-tomato: #c64b33;
+  --retro-mustard: #f2a53d;
+  --retro-cream: #fff4df;
+  --retro-brown: #4a2f22;
+  --retro-neon: #ffce7a;
+  --page-enter-duration: 800ms;
+}
 
 * {
   margin: 0;
@@ -6,25 +15,144 @@
   box-sizing: border-box;
 }
 
+html,
 body {
-  font-family: 'Poppins', 'Inter', 'Roboto', sans-serif;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Nunito', 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color: var(--retro-brown);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Bungee', 'Nunito', sans-serif;
+}
+
+#root {
+  animation: pageEnter var(--page-enter-duration) ease;
+}
+
+.page-shell {
+  position: relative;
+  isolation: isolate;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 14px),
+    repeating-linear-gradient(-45deg, rgba(198, 75, 51, 0.02) 0 2px, transparent 2px 18px);
+}
+
+.page-shell::before,
+.page-shell::after {
+  content: '';
+  position: fixed;
+  pointer-events: none;
+  z-index: -1;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  filter: blur(2px);
+}
+
+.page-shell::before {
+  top: -90px;
+  right: -60px;
+  background: radial-gradient(circle, rgba(255, 206, 122, 0.55), rgba(255, 206, 122, 0));
+}
+
+.page-shell::after {
+  bottom: -120px;
+  left: -80px;
+  background: radial-gradient(circle, rgba(198, 75, 51, 0.24), rgba(198, 75, 51, 0));
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.15);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #bbb;
-  border-radius: 4px;
+  background: linear-gradient(180deg, var(--retro-mustard), var(--retro-tomato));
+  border-radius: 999px;
+  border: 2px solid rgba(255, 244, 223, 0.85);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #999;
+  background: linear-gradient(180deg, #ffd275, #ea7a58);
+}
+
+button,
+.MuiButton-root,
+.MuiIconButton-root,
+.MuiChip-root {
+  will-change: transform;
+}
+
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(22px) scale(0.985);
+  transition: opacity 520ms ease, transform 520ms ease;
+}
+
+.scroll-reveal.in-view {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.retro-toggle {
+  border-radius: 999px;
+  padding: 4px;
+  background: linear-gradient(120deg, rgba(242, 165, 61, 0.28), rgba(198, 75, 51, 0.28));
+  border: 2px solid rgba(198, 75, 51, 0.35);
+  backdrop-filter: blur(6px);
+}
+
+.retro-toggle .MuiIconButton-root {
+  transition: transform 220ms ease, background-color 220ms ease;
+}
+
+.retro-toggle .MuiIconButton-root:active {
+  transform: scale(0.9) rotate(-8deg);
+}
+
+@supports (animation-timeline: view()) {
+  .MuiCard-root,
+  .MuiPaper-root,
+  .MuiTableContainer-root {
+    animation-name: liftOnScroll;
+    animation-duration: 1ms;
+    animation-timeline: view();
+    animation-range: entry 0% cover 35%;
+  }
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes liftOnScroll {
+  from {
+    opacity: 0.2;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }

@@ -127,7 +127,7 @@ export default function Orders() {
                 <TableRow key={o.order_id} hover>
                   <TableCell>#{o.order_id}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{o.customer_name || 'Walk-in'}</TableCell>
-                  <TableCell>${Number(o.total_amount).toFixed(2)}</TableCell>
+                  <TableCell>₹{Number(o.total_amount).toFixed(2)}</TableCell>
                   <TableCell>
                     <FormControl size="small" sx={{ minWidth: 120 }}>
                       <Select value={o.status} onChange={(e) => updateStatus(o.order_id, e.target.value)} size="small">
@@ -168,7 +168,7 @@ export default function Orders() {
                 <TextField label="Food Item" select fullWidth size="small" value={item.food_item_id}
                   onChange={(e) => updateItem(idx, 'food_item_id', e.target.value)}>
                   {foodItems.filter((f) => f.is_available).map((f) => (
-                    <MenuItem key={f.id} value={f.id}>{f.name} — ${Number(f.price).toFixed(2)}</MenuItem>
+                    <MenuItem key={f.id} value={f.id}>{f.name} — ₹{Number(f.price).toFixed(2)}</MenuItem>
                   ))}
                 </TextField>
               </Grid>
@@ -186,7 +186,7 @@ export default function Orders() {
           <Button startIcon={<AddCircle />} onClick={addItem} sx={{ mt: 1 }}>Add Item</Button>
           <Divider sx={{ my: 2 }} />
           <Typography variant="h6" sx={{ textAlign: 'right' }}>
-            Total: ${calcTotal().toFixed(2)}
+            Total: ₹{calcTotal().toFixed(2)}
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -218,14 +218,14 @@ export default function Orders() {
                 <TableRow key={item.id}>
                   <TableCell>{item.food_item_name}</TableCell>
                   <TableCell>{item.quantity}</TableCell>
-                  <TableCell>${Number(item.unit_price).toFixed(2)}</TableCell>
-                  <TableCell>${Number(item.subtotal).toFixed(2)}</TableCell>
+                  <TableCell>₹{Number(item.unit_price).toFixed(2)}</TableCell>
+                  <TableCell>₹{Number(item.subtotal).toFixed(2)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
           <Typography variant="h6" sx={{ mt: 2, textAlign: 'right' }}>
-            Total: ${viewDialog?.total_amount && Number(viewDialog.total_amount).toFixed(2)}
+            Total: ₹{viewDialog?.total_amount && Number(viewDialog.total_amount).toFixed(2)}
           </Typography>
         </DialogContent>
         <DialogActions>

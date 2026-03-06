@@ -86,7 +86,7 @@ export default function FoodItems() {
                     <Chip label={categoryLabels[item.category]} size="small"
                       sx={{ bgcolor: categoryColors[item.category] + '20', color: categoryColors[item.category], fontWeight: 600 }} />
                   </TableCell>
-                  <TableCell>${Number(item.price).toFixed(2)}</TableCell>
+                  <TableCell>₹{Number(item.price).toFixed(2)}</TableCell>
                   <TableCell>
                     <Chip label={item.is_available ? 'Yes' : 'No'} color={item.is_available ? 'success' : 'error'} size="small" />
                   </TableCell>
@@ -115,7 +115,7 @@ export default function FoodItems() {
           <TextField label="Category" select fullWidth margin="normal" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
             {categories.map((c) => <MenuItem key={c} value={c}>{categoryLabels[c]}</MenuItem>)}
           </TextField>
-          <TextField label="Price" type="number" fullWidth margin="normal" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required inputProps={{ step: '0.01', min: '0' }} />
+          <TextField label="Price (₹)" type="number" fullWidth margin="normal" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required inputProps={{ step: '0.01', min: '0' }} />
           <TextField label="Description" fullWidth margin="normal" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} multiline rows={2} />
           <FormControlLabel control={<Switch checked={form.is_available} onChange={(e) => setForm({ ...form, is_available: e.target.checked })} />} label="Available" sx={{ mt: 1 }} />
         </DialogContent>
