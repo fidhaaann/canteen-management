@@ -141,3 +141,7 @@ npm start      # Starts on http://localhost:3000
 ## License
 
 MIT
+
+## Database Documentation
+
+For ER diagram, tables, SQL features, and constraints, see `database/README.md`.
