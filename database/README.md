@@ -151,104 +151,96 @@ erDiagram
 7. SQL expressions/functions used
 - `COALESCE`, `SUM`, `COUNT`, `DATE`, `NOW`, `GREATEST`, `CASE`
 
-## Trigger Explanations
+## Trigger Details
+
+This section documents trigger name, usage, and join usage.
 
 ### 1. `trg_order_item_subtotal`
 
-- Event: `BEFORE INSERT` on `order_items`
-- Purpose: Auto-calculates line item subtotal before saving a row.
-- Logic:
-  - `NEW.subtotal = NEW.quantity * NEW.unit_price`
-- Benefit:
-  - Prevents incorrect subtotal values from being inserted by application code.
+- Name: `trg_order_item_subtotal`
+- Event and table: `BEFORE INSERT` on `order_items`
+- Use: Auto-calculate each line subtotal at insert time.
+- Core logic: `NEW.subtotal = NEW.quantity * NEW.unit_price`
+- Join used: None (row-level calculation only).
 
 ### 2. `trg_update_order_total_insert`
 
-- Event: `AFTER INSERT` on `order_items`
-- Purpose: Recomputes and updates the parent order total when a new item is added.
-- Logic:
-  - Sums all `subtotal` values for the related `order_id`.
-  - Uses `COALESCE(SUM(subtotal), 0)` to avoid `NULL` totals.
-  - Updates `orders.total_amount`.
-- Benefit:
-  - Keeps order header totals consistent with order line items.
+- Name: `trg_update_order_total_insert`
+- Event and table: `AFTER INSERT` on `order_items`
+- Use: Recompute `orders.total_amount` when a new order item is added.
+- Core logic:
+  - Aggregates `SUM(subtotal)` for `NEW.order_id` from `order_items`.
+  - Uses `COALESCE(..., 0)` so the total never becomes `NULL`.
+- Join used: None (correlated aggregate subquery on `order_items`, then `UPDATE` on `orders`).
 
 ### 3. `trg_update_order_total_delete`
 
-- Event: `AFTER DELETE` on `order_items`
-- Purpose: Recomputes and updates the parent order total when an item is removed.
-- Logic:
-  - Re-sums remaining line item subtotals for the deleted row's `order_id`.
-  - Falls back to `0` when no rows remain.
-- Benefit:
-  - Ensures totals remain accurate after deletions.
+- Name: `trg_update_order_total_delete`
+- Event and table: `AFTER DELETE` on `order_items`
+- Use: Recompute `orders.total_amount` when an order item is removed.
+- Core logic:
+  - Re-aggregates remaining `SUM(subtotal)` for `OLD.order_id`.
+  - Falls back to `0` when no order items remain.
+- Join used: None (correlated aggregate subquery on `order_items`, then `UPDATE` on `orders`).
 
 ### 4. `trg_decrease_stock`
 
-- Event: `AFTER INSERT` on `order_items`
-- Purpose: Reduces inventory and updates item availability whenever an order item is created.
-- Logic:
-  - Decreases `stock.quantity` for the corresponding `food_item_id`.
-  - Uses `GREATEST(quantity - NEW.quantity, 0)` so quantity does not become negative.
-  - Recalculates availability in `food_items.is_available`:
-    - `TRUE` if total stock for that item is greater than 0.
-    - `FALSE` otherwise.
-- Benefit:
-  - Keeps inventory and menu availability synchronized with sales.
+- Name: `trg_decrease_stock`
+- Event and table: `AFTER INSERT` on `order_items`
+- Use: Reduce inventory and update item availability after each sold item row.
+- Core logic:
+  - Updates `stock.quantity` using `GREATEST(quantity - NEW.quantity, 0)`.
+  - Updates `food_items.is_available` using a stock sum check (`SUM(s.quantity) > 0`).
+- Join used: None in explicit SQL join syntax. Uses a filtered subquery on `stock` (`FROM stock s WHERE s.food_item_id = NEW.food_item_id`).
 
-## View Explanations
+## View Details
+
+This section documents view name, usage, and exact joins.
 
 ### 1. `v_order_summary`
 
-- Purpose: Provides a single summary row per order for listing and dashboard use.
-- Source tables:
-  - `orders` (base)
-  - `customers` (left join)
-  - `users` (left join)
-- Returned fields include:
-  - Order ID, order date, customer name/phone, total amount, status, creator name.
-- Why it is useful:
-  - Avoids repeating multi-table joins in API/report queries.
+- Name: `v_order_summary`
+- Use: Single-row order summary for API list pages and dashboard cards.
+- Base table: `orders o`
+- Joins used:
+  - `LEFT JOIN customers c ON o.customer_id = c.id`
+  - `LEFT JOIN users u ON o.created_by = u.id`
+- Key output: order id/date, customer details, total, status, creator name.
 
 ### 2. `v_daily_sales`
 
-- Purpose: Aggregates sales metrics by date.
-- Source table:
-  - `orders`
-- Logic:
-  - Groups by `DATE(order_date)`.
-  - Returns order count and revenue sum per day.
-  - Excludes cancelled orders (`status != 'cancelled'`).
-  - Orders results by latest day first.
-- Why it is useful:
-  - Supports trend charts and daily revenue reporting.
+- Name: `v_daily_sales`
+- Use: Daily order and revenue aggregation for trend reporting.
+- Base table: `orders o`
+- Joins used: None.
+- Key logic:
+  - `GROUP BY DATE(o.order_date)`
+  - Excludes cancelled orders (`o.status != 'cancelled'`)
+  - Produces `COUNT(o.id)` and `SUM(o.total_amount)`
 
 ### 3. `v_category_sales`
 
-- Purpose: Aggregates sales by food category.
-- Source tables:
-  - `order_items`
-  - `food_items`
-  - `orders`
-- Logic:
-  - Joins items to categories.
-  - Counts items sold and sums revenue (`SUM(oi.subtotal)`) per category.
-  - Excludes cancelled orders.
-- Why it is useful:
-  - Shows category performance for menu planning and pricing decisions.
+- Name: `v_category_sales`
+- Use: Category-level sales volume and revenue analysis.
+- Base table: `order_items oi`
+- Joins used:
+  - `JOIN food_items fi ON oi.food_item_id = fi.id`
+  - `JOIN orders o ON oi.order_id = o.id`
+- Key logic:
+  - Excludes cancelled orders (`o.status != 'cancelled'`)
+  - Aggregates by `fi.category`
 
 ### 4. `v_low_stock`
 
-- Purpose: Lists stock entries at or below reorder level.
-- Source tables:
-  - `stock`
-  - `food_items`
-  - `suppliers` (left join)
-- Logic:
-  - Filters rows where `quantity <= reorder_level`.
-  - Includes supplier contact info when available.
-- Why it is useful:
-  - Drives low-stock alerts and restocking workflow.
+- Name: `v_low_stock`
+- Use: Operational alert view for restocking decisions.
+- Base table: `stock s`
+- Joins used:
+  - `JOIN food_items fi ON s.food_item_id = fi.id`
+  - `LEFT JOIN suppliers sup ON s.supplier_id = sup.id`
+- Key logic:
+  - Filters on `s.quantity <= s.reorder_level`
+  - Includes supplier info when available.
 
 ## Trigger and View Flow
 
