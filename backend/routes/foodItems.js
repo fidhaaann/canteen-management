@@ -1,6 +1,6 @@
 const express = require('express');
 const pool = require('../db');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -28,7 +28,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 });
 
 // POST /api/food-items
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { name, category, price, description, is_available } = req.body;
     if (!name || !category || price == null) {
@@ -48,7 +48,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // PUT /api/food-items/:id
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { name, category, price, description, is_available } = req.body;
     if (!name || !category || price == null) {
@@ -69,7 +69,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 });
 
 // DELETE /api/food-items/:id
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const [result] = await pool.query('DELETE FROM food_items WHERE id = ?', [req.params.id]);
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Food item not found' });

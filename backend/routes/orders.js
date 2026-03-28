@@ -1,6 +1,6 @@
 const express = require('express');
 const pool = require('../db');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -106,7 +106,7 @@ router.put('/:id/status', authenticateToken, async (req, res) => {
 });
 
 // DELETE /api/orders/:id
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const [result] = await pool.query('DELETE FROM orders WHERE id = ?', [req.params.id]);
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Order not found' });

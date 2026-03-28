@@ -1,6 +1,6 @@
 const express = require('express');
 const pool = require('../db');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -28,7 +28,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 });
 
 // POST /api/customers
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { name, email, phone, address } = req.body;
     if (!name) return res.status(400).json({ error: 'Name is required' });
@@ -49,7 +49,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // PUT /api/customers/:id
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { name, email, phone, address } = req.body;
     if (!name) return res.status(400).json({ error: 'Name is required' });
@@ -68,7 +68,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 });
 
 // DELETE /api/customers/:id
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const [result] = await pool.query('DELETE FROM customers WHERE id = ?', [req.params.id]);
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Customer not found' });
