@@ -331,6 +331,153 @@ Flow summary:
 - `food_items.category`: `appetizer`, `main_course`, `dessert`, `beverage`, `snack`
 - `orders.status`: `pending`, `preparing`, `ready`, `delivered`, `cancelled`
 
+## Aggregate Queries Used Outside `database/schema.sql`
+
+These are runtime aggregate queries used in backend route files, ready to copy-paste.
+
+### Orders totals
+
+```sql
+UPDATE orders
+SET total_amount = (
+  SELECT COALESCE(SUM(subtotal), 0)
+  FROM order_items
+  WHERE order_id = ?
+)
+WHERE id = ?;
+```
+
+### Reports summary
+
+```sql
+SELECT COUNT(*) AS totalCustomers FROM customers;
+SELECT COUNT(*) AS totalFoodItems FROM food_items;
+SELECT COUNT(*) AS totalOrders FROM orders;
+SELECT COALESCE(SUM(total_amount), 0) AS totalRevenue
+FROM orders
+WHERE status != 'cancelled';
+SELECT COUNT(*) AS pendingOrders
+FROM orders
+WHERE status IN ('pending', 'preparing');
+SELECT COUNT(*) AS lowStockCount FROM v_low_stock;
+```
+
+### Most ordered items report
+
+```sql
+SELECT fi.name, fi.category, COUNT(oi.id) AS times_ordered, SUM(oi.subtotal) AS revenue
+FROM order_items oi
+JOIN food_items fi ON oi.food_item_id = fi.id
+JOIN orders o ON oi.order_id = o.id
+WHERE o.status != 'cancelled'
+GROUP BY fi.id, fi.name, fi.category
+ORDER BY times_ordered DESC, revenue DESC;
+```
+
+### Top customers report
+
+```sql
+SELECT c.name, c.email, COUNT(o.id) AS total_orders, SUM(o.total_amount) AS total_spent
+FROM customers c
+JOIN orders o ON c.id = o.customer_id
+WHERE o.status != 'cancelled'
+GROUP BY c.id, c.name, c.email
+ORDER BY total_spent DESC, total_orders DESC;
+```
+
+### Student aggregates
+
+```sql
+SELECT COUNT(*) AS total_orders, COALESCE(SUM(total_amount), 0) AS total_spent
+FROM orders
+WHERE student_id = ? AND status != 'cancelled';
+
+SELECT fi.name, fi.category, SUM(oi.quantity) AS total_quantity, SUM(oi.subtotal) AS total_spent
+FROM order_items oi
+JOIN orders o ON oi.order_id = o.id
+JOIN food_items fi ON oi.food_item_id = fi.id
+WHERE o.student_id = ? AND o.status != 'cancelled'
+GROUP BY fi.id;
+```
+
+## JOIN Queries Used Outside `database/schema.sql`
+
+These are runtime JOIN queries used in backend route files, ready to copy-paste.
+
+### Order items with food item details
+
+```sql
+SELECT oi.*, fi.name AS food_item_name, fi.category
+FROM order_items oi
+JOIN food_items fi ON oi.food_item_id = fi.id
+WHERE oi.order_id = ?;
+```
+
+### Order items with food item name
+
+```sql
+SELECT oi.*, fi.name AS food_item_name
+FROM order_items oi
+JOIN food_items fi ON oi.food_item_id = fi.id
+WHERE oi.order_id = ?;
+```
+
+### Student order item summary with joins
+
+```sql
+SELECT fi.name, fi.category, SUM(oi.quantity) AS total_quantity, SUM(oi.subtotal) AS total_spent
+FROM order_items oi
+JOIN orders o ON oi.order_id = o.id
+JOIN food_items fi ON oi.food_item_id = fi.id
+WHERE o.student_id = ? AND o.status != 'cancelled'
+GROUP BY fi.id;
+```
+
+### Most ordered items report with joins
+
+```sql
+SELECT fi.name, fi.category, COUNT(oi.id) AS times_ordered, SUM(oi.subtotal) AS revenue
+FROM order_items oi
+JOIN food_items fi ON oi.food_item_id = fi.id
+JOIN orders o ON oi.order_id = o.id
+WHERE o.status != 'cancelled'
+GROUP BY fi.id, fi.name, fi.category
+ORDER BY times_ordered DESC
+LIMIT 10;
+```
+
+### Top customers report with join
+
+```sql
+SELECT c.name, c.email, COUNT(o.id) AS total_orders, SUM(o.total_amount) AS total_spent
+FROM customers c
+JOIN orders o ON c.id = o.customer_id
+WHERE o.status != 'cancelled'
+GROUP BY c.id, c.name, c.email
+ORDER BY total_spent DESC
+LIMIT 10;
+```
+
+### Stock list with supplier details
+
+```sql
+SELECT s.*, fi.name AS food_item_name, fi.category, sup.name AS supplier_name
+FROM stock s
+JOIN food_items fi ON s.food_item_id = fi.id
+LEFT JOIN suppliers sup ON s.supplier_id = sup.id
+ORDER BY fi.name;
+```
+
+### Stock by id with supplier details
+
+```sql
+SELECT s.*, fi.name AS food_item_name, sup.name AS supplier_name
+FROM stock s
+JOIN food_items fi ON s.food_item_id = fi.id
+LEFT JOIN suppliers sup ON s.supplier_id = sup.id
+WHERE s.id = ?;
+```
+
 ## Notes
 
 - Business logic is partly enforced at the database layer through triggers.
