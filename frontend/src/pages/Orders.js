@@ -21,20 +21,11 @@ export default function Orders() {
   const [viewDialog, setViewDialog] = useState(null);
   const [form, setForm] = useState({ customer_id: '', items: [{ food_item_id: '', quantity: 1 }] });
   const [error, setError] = useState('');
-  
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterDate, setFilterDate] = useState('');
 
   const load = () => {
     setLoading(true);
-    let url = '/orders';
-    const params = new URLSearchParams();
-    if (filterStatus !== 'all') params.append('status', filterStatus);
-    if (filterDate) params.append('date', filterDate);
-    if (params.toString()) url += `?${params.toString()}`;
-
     Promise.all([
-      api.get(url),
+      api.get('/orders'),
       api.get('/customers'),
       api.get('/food-items'),
     ]).then(([o, c, f]) => {
@@ -43,7 +34,7 @@ export default function Orders() {
       setFoodItems(f.data);
     }).catch(console.error).finally(() => setLoading(false));
   };
-  useEffect(() => { load(); }, [filterStatus, filterDate]);
+  useEffect(() => { load(); }, []);
 
   const openAdd = () => {
     setForm({ customer_id: '', items: [{ food_item_id: '', quantity: 1 }] });
@@ -114,30 +105,7 @@ export default function Orders() {
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">Orders</Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <TextField
-            select
-            size="small"
-            label="Filter Status"
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            sx={{ width: 140 }}
-            SelectProps={{ native: true }}
-          >
-            <option value="all">All Status</option>
-            {statuses.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
-          </TextField>
-          <TextField
-            type="date"
-            size="small"
-            label="Filter Date"
-            InputLabelProps={{ shrink: true }}
-            value={filterDate}
-            onChange={(e) => setFilterDate(e.target.value)}
-            sx={{ width: 150 }}
-          />
-          <Button variant="contained" startIcon={<Add />} onClick={openAdd}>New Order</Button>
-        </Box>
+        <Button variant="contained" startIcon={<Add />} onClick={openAdd}>New Order</Button>
       </Box>
 
       <Fade in>
@@ -147,7 +115,6 @@ export default function Orders() {
               <TableRow>
                 <TableCell>Order #</TableCell>
                 <TableCell>Customer</TableCell>
-                <TableCell>Ticket</TableCell>
                 <TableCell>Amount</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Created By</TableCell>
@@ -160,7 +127,6 @@ export default function Orders() {
                 <TableRow key={o.order_id} hover>
                   <TableCell>#{o.order_id}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{o.customer_name || 'Walk-in'}</TableCell>
-                  <TableCell>{o.slot_ticket ? <Chip label={o.slot_ticket} size="small" variant="outlined" color="primary" /> : '-'}</TableCell>
                   <TableCell>₹{Number(o.total_amount).toFixed(2)}</TableCell>
                   <TableCell>
                     <FormControl size="small" sx={{ minWidth: 120 }}>
@@ -178,7 +144,7 @@ export default function Orders() {
                 </TableRow>
               ))}
               {orders.length === 0 && (
-                <TableRow><TableCell colSpan={8} align="center">No orders found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} align="center">No orders found</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

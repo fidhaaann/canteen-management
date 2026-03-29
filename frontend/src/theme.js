@@ -22,8 +22,8 @@ export const getTheme = (mode) =>
         paper: mode === 'light' ? '#FFFDF5' : '#2C241D',
       },
       text: {
-        primary: mode === 'light' ? '#281A12' : '#FFFDF5',
-        secondary: mode === 'light' ? '#5E4A3A' : '#D4C4B1',
+        primary: mode === 'light' ? '#34261B' : '#F6E9D8',
+        secondary: mode === 'light' ? '#6C5241' : '#C9B29C',
       },
     },
     typography: {
@@ -32,17 +32,14 @@ export const getTheme = (mode) =>
         fontFamily: "'Bungee', 'Nunito', sans-serif",
         fontWeight: 400,
         letterSpacing: '0.02em',
-        fontSize: '1.75rem',
       },
       h5: {
         fontFamily: "'Bungee', 'Nunito', sans-serif",
         fontWeight: 400,
-        fontSize: '1.25rem',
       },
       h6: {
         fontFamily: "'Bungee', 'Nunito', sans-serif",
         fontWeight: 400,
-        fontSize: '1.1rem',
       },
       button: {
         fontWeight: 800,
@@ -50,7 +47,7 @@ export const getTheme = (mode) =>
       },
     },
     shape: {
-      borderRadius: 12,
+      borderRadius: 18,
     },
     components: {
       MuiCssBaseline: {
@@ -71,7 +68,7 @@ export const getTheme = (mode) =>
         styleOverrides: {
           root: {
             textTransform: 'none',
-            borderRadius: 10,
+            borderRadius: 14,
             paddingInline: 18,
             transition: 'transform 180ms ease, box-shadow 180ms ease, filter 180ms ease',
             boxShadow: `0 8px 18px ${alpha('#9B3A27', mode === 'light' ? 0.22 : 0.35)}`,
@@ -112,7 +109,7 @@ export const getTheme = (mode) =>
       MuiPaper: {
         styleOverrides: {
           root: {
-            borderRadius: 12,
+            borderRadius: 20,
             border: `2px solid ${alpha(mode === 'light' ? '#F2A53D' : '#FFD275', 0.35)}`,
             boxShadow: mode === 'light'
               ? '0 10px 30px rgba(120, 72, 34, 0.12)'
@@ -123,7 +120,7 @@ export const getTheme = (mode) =>
       MuiCard: {
         styleOverrides: {
           root: {
-            borderRadius: 12,
+            borderRadius: 20,
             border: `2px solid ${alpha(mode === 'light' ? '#F2A53D' : '#FFD275', 0.30)}`,
             backgroundImage: mode === 'light'
               ? 'linear-gradient(180deg, rgba(255,253,245,0.95), rgba(255,247,227,0.95))'
@@ -160,7 +157,7 @@ export const getTheme = (mode) =>
       MuiListItemButton: {
         styleOverrides: {
           root: {
-            borderRadius: 8,
+            borderRadius: 14,
             marginBottom: 4,
             transition: 'transform 160ms ease, background-color 160ms ease',
             '&:hover': {
@@ -198,7 +195,7 @@ export const getTheme = (mode) =>
         styleOverrides: {
           root: {
             backgroundColor: mode === 'light' ? 'rgba(255, 251, 241, 0.9)' : 'rgba(45, 36, 29, 0.78)',
-            borderRadius: 10,
+            borderRadius: 14,
             transition: 'box-shadow 180ms ease, border-color 180ms ease',
             '& .MuiOutlinedInput-notchedOutline': {
               borderColor: alpha(mode === 'light' ? '#B57D2F' : '#F2A53D', 0.55),

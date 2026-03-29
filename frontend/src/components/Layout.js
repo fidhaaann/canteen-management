@@ -15,7 +15,7 @@ import { useThemeMode } from '../context/ThemeContext';
 
 const DRAWER_WIDTH = 260;
 
-const adminStaffMenuItems = [
+const menuItems = [
   { text: 'Dashboard', icon: <Dashboard />, path: '/' },
   { text: 'Customers', icon: <People />, path: '/customers' },
   { text: 'Food Items', icon: <Restaurant />, path: '/food-items' },
@@ -23,13 +23,6 @@ const adminStaffMenuItems = [
   { text: 'Suppliers', icon: <LocalShipping />, path: '/suppliers' },
   { text: 'Stock', icon: <Inventory />, path: '/stock' },
   { text: 'Reports', icon: <Assessment />, path: '/reports', adminOnly: true },
-];
-
-const studentMenuItems = [
-  { text: 'Student Dashboard', icon: <Dashboard />, path: '/student' },
-  { text: 'Browse Menu', icon: <Restaurant />, path: '/student/menu' },
-  { text: 'My Orders & Tickets', icon: <ShoppingCart />, path: '/student/orders' },
-  { text: 'My Report', icon: <Assessment />, path: '/student/report' },
 ];
 
 export default function Layout() {
@@ -117,8 +110,7 @@ export default function Layout() {
     if (isMobile) setDrawerOpen(false);
   };
 
-  const baseItems = user?.role === 'student' ? studentMenuItems : adminStaffMenuItems;
-  const filteredMenuItems = baseItems.filter(
+  const filteredMenuItems = menuItems.filter(
     (item) => !item.adminOnly || user?.role === 'admin'
   );
 
@@ -158,8 +150,8 @@ export default function Layout() {
       <Divider />
       <Box sx={{ p: 2 }}>
         <Chip
-          label={user?.role === 'admin' ? 'Admin' : user?.role === 'student' ? 'Student' : 'Staff'}
-          color={user?.role === 'admin' ? 'primary' : user?.role === 'student' ? 'secondary' : 'default'}
+          label={user?.role === 'admin' ? 'Admin' : 'Staff'}
+          color={user?.role === 'admin' ? 'primary' : 'default'}
           size="small"
           sx={{ fontWeight: 600 }}
         />
@@ -220,21 +212,6 @@ export default function Layout() {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.3, flexWrap: 'wrap' }}>
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 800, letterSpacing: '0.08em' }}>
                   Fresh. Fast. Flavorful.
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    px: 0.8,
-                    py: 0.2,
-                    borderRadius: 1,
-                    border: '1px dashed',
-                    borderColor: 'primary.main',
-                    fontFamily: "'JetBrains Mono', monospace",
-                    color: 'primary.dark',
-                    bgcolor: 'rgba(255,255,255,0.3)',
-                  }}
-                >
-                  {`route:${location.pathname}`}
                 </Typography>
               </Box>
             </Box>

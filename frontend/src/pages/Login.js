@@ -42,8 +42,13 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const handleMouseMove = (e) => {
+    setCursorPos({ x: e.clientX, y: e.clientY });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,18 +67,37 @@ export default function Login() {
 
   return (
     <Box
+      onMouseMove={handleMouseMove}
       sx={{
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        /* Rich dark background — completely independent of app theme */
-        background: 'linear-gradient(145deg, #0f0a07 0%, #1c1109 45%, #2a1a0e 100%)',
+        /* Lightened dark background */
+        background: 'linear-gradient(145deg, #1a1410 0%, #2d2319 45%, #3d2e1f 100%)',
         p: { xs: 2, md: 3 },
         position: 'relative',
         overflow: 'hidden',
       }}
     >
+      {/* Cursor light orb effect */}
+      <Box
+        sx={{
+          position: 'fixed',
+          top: cursorPos.y,
+          left: cursorPos.x,
+          width: 120,
+          height: 120,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(242,165,61,0.4) 0%, rgba(242,165,61,0.1) 50%, transparent 100%)',
+          boxShadow: '0 0 40px rgba(242,165,61,0.3), 0 0 80px rgba(242,165,61,0.15)',
+          pointerEvents: 'none',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 0,
+          transition: 'all 0.1s ease-out',
+        }}
+      />
+
       {/* Subtle ambient glows */}
       <Box sx={{ position: 'absolute', top: -120, left: -80, width: 340, height: 340, borderRadius: '50%', background: 'radial-gradient(circle, rgba(198,75,51,0.18), transparent 70%)', pointerEvents: 'none' }} />
       <Box sx={{ position: 'absolute', bottom: -100, right: -80, width: 320, height: 320, borderRadius: '50%', background: 'radial-gradient(circle, rgba(242,165,61,0.14), transparent 70%)', pointerEvents: 'none' }} />
