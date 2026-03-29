@@ -11,7 +11,7 @@ import api from '../api';
 const categories = ['appetizer', 'main_course', 'dessert', 'beverage', 'snack'];
 const categoryLabels = { appetizer: 'Appetizer', main_course: 'Main Course', dessert: 'Dessert', beverage: 'Beverage', snack: 'Snack' };
 const categoryColors = { appetizer: '#FF9800', main_course: '#4CAF50', dessert: '#E91E63', beverage: '#2196F3', snack: '#9C27B0' };
-const emptyForm = { name: '', category: 'main_course', price: '', description: '', is_available: true };
+const emptyForm = { name: '', category: 'main_course', type: 'veg', price: '', description: '', is_available: true };
 
 export default function FoodItems() {
   const [items, setItems] = useState([]);
@@ -21,15 +21,24 @@ export default function FoodItems() {
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState('');
 
+  const [filterType, setFilterType] = useState('all');
+  const [filterCategory, setFilterCategory] = useState('all');
+
   const load = () => {
     setLoading(true);
-    api.get('/food-items').then((res) => setItems(res.data)).catch(console.error).finally(() => setLoading(false));
+    let url = '/food-items';
+    const params = new URLSearchParams();
+    if (filterType !== 'all') params.append('type', filterType);
+    if (filterCategory !== 'all') params.append('category', filterCategory);
+    if (params.toString()) url += `?${params.toString()}`;
+    
+    api.get(url).then((res) => setItems(res.data)).catch(console.error).finally(() => setLoading(false));
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [filterType, filterCategory]);
 
   const openAdd = () => { setForm(emptyForm); setEditId(null); setError(''); setDialogOpen(true); };
   const openEdit = (item) => {
-    setForm({ name: item.name, category: item.category, price: item.price, description: item.description || '', is_available: !!item.is_available });
+    setForm({ name: item.name, category: item.category, type: item.type || 'veg', price: item.price, description: item.description || '', is_available: !!item.is_available });
     setEditId(item.id); setError(''); setDialogOpen(true);
   };
 
@@ -60,7 +69,34 @@ export default function FoodItems() {
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">Food Items</Typography>
-        <Button variant="contained" startIcon={<Add />} onClick={openAdd}>Add Item</Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <TextField
+            select
+            size="small"
+            label="Filter Category"
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            sx={{ width: 160 }}
+            SelectProps={{ native: true }}
+          >
+            <option value="all">All Categories</option>
+            {categories.map((c) => <option key={c} value={c}>{categoryLabels[c]}</option>)}
+          </TextField>
+          <TextField
+            select
+            size="small"
+            label="Filter Type"
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            sx={{ width: 130 }}
+            SelectProps={{ native: true }}
+          >
+            <option value="all">All Types</option>
+            <option value="veg">Veg Only</option>
+            <option value="non-veg">Non-Veg</option>
+          </TextField>
+          <Button variant="contained" startIcon={<Add />} onClick={openAdd}>Add Item</Button>
+        </Box>
       </Box>
 
       <Fade in>
@@ -71,6 +107,7 @@ export default function FoodItems() {
                 <TableCell>ID</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell>Category</TableCell>
+                <TableCell>Type</TableCell>
                 <TableCell>Price</TableCell>
                 <TableCell>Available</TableCell>
                 <TableCell>Description</TableCell>
@@ -85,6 +122,9 @@ export default function FoodItems() {
                   <TableCell>
                     <Chip label={categoryLabels[item.category]} size="small"
                       sx={{ bgcolor: categoryColors[item.category] + '20', color: categoryColors[item.category], fontWeight: 600 }} />
+                  </TableCell>
+                  <TableCell>
+                    <Chip label={item.type === 'veg' ? 'Veg' : 'Non-Veg'} size="small" color={item.type === 'veg' ? 'success' : 'error'} variant="outlined" />
                   </TableCell>
                   <TableCell>₹{Number(item.price).toFixed(2)}</TableCell>
                   <TableCell>
@@ -114,6 +154,10 @@ export default function FoodItems() {
           <TextField label="Name" fullWidth margin="normal" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           <TextField label="Category" select fullWidth margin="normal" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
             {categories.map((c) => <MenuItem key={c} value={c}>{categoryLabels[c]}</MenuItem>)}
+          </TextField>
+          <TextField label="Type" select fullWidth margin="normal" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
+            <MenuItem value="veg">Vegetarian</MenuItem>
+            <MenuItem value="non-veg">Non-Vegetarian</MenuItem>
           </TextField>
           <TextField label="Price (₹)" type="number" fullWidth margin="normal" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required inputProps={{ step: '0.01', min: '0' }} />
           <TextField label="Description" fullWidth margin="normal" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} multiline rows={2} />

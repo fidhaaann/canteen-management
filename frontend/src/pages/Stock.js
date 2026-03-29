@@ -19,6 +19,7 @@ export default function Stock() {
   const [form, setForm] = useState(emptyForm);
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState('');
+  const [filterLevel, setFilterLevel] = useState('all');
 
   const load = () => {
     setLoading(true);
@@ -70,7 +71,21 @@ export default function Stock() {
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">Stock Management</Typography>
-        <Button variant="contained" startIcon={<Add />} onClick={openAdd}>Add Stock</Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <TextField
+            select
+            size="small"
+            label="Filter Level"
+            value={filterLevel}
+            onChange={(e) => setFilterLevel(e.target.value)}
+            sx={{ width: 150 }}
+            SelectProps={{ native: true }}
+          >
+            <option value="all">All Stock</option>
+            <option value="low">Low Stock Only</option>
+          </TextField>
+          <Button variant="contained" startIcon={<Add />} onClick={openAdd}>Add Stock</Button>
+        </Box>
       </Box>
 
       <Fade in>
@@ -90,7 +105,7 @@ export default function Stock() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {stock.map((s) => {
+              {stock.filter(s => filterLevel === 'all' || parseFloat(s.quantity) <= parseFloat(s.reorder_level)).map((s) => {
                 const isLow = parseFloat(s.quantity) <= parseFloat(s.reorder_level);
                 return (
                   <TableRow key={s.id} hover sx={isLow ? { bgcolor: 'error.main', '& td': { color: '#fff' } } : {}}>
