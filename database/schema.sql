@@ -29,11 +29,21 @@ CREATE TABLE IF NOT EXISTS customers (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Students table
+CREATE TABLE IF NOT EXISTS students (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  register_number VARCHAR(50) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  full_name VARCHAR(100) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Food Items table
 CREATE TABLE IF NOT EXISTS food_items (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
   category ENUM('appetizer', 'main_course', 'dessert', 'beverage', 'snack') NOT NULL,
+  type ENUM('veg', 'non-veg') NOT NULL DEFAULT 'veg',
   price DECIMAL(10, 2) NOT NULL,
   description TEXT,
   is_available BOOLEAN DEFAULT TRUE,
@@ -69,11 +79,14 @@ CREATE TABLE IF NOT EXISTS stock (
 CREATE TABLE IF NOT EXISTS orders (
   id INT AUTO_INCREMENT PRIMARY KEY,
   customer_id INT,
+  student_id INT,
+  slot_ticket VARCHAR(20),
   order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   total_amount DECIMAL(10, 2) NOT NULL DEFAULT 0,
   status ENUM('pending', 'preparing', 'ready', 'delivered', 'cancelled') NOT NULL DEFAULT 'pending',
   created_by INT,
   FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL,
+  FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE SET NULL,
   FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
@@ -156,13 +169,16 @@ CREATE OR REPLACE VIEW v_order_summary AS
 SELECT
   o.id AS order_id,
   o.order_date,
-  c.name AS customer_name,
-  c.phone AS customer_phone,
+  COALESCE(c.name, st.full_name) AS customer_name,
+  COALESCE(c.phone, st.register_number) AS customer_phone,
   o.total_amount,
   o.status,
+  o.slot_ticket,
+  o.student_id,
   u.full_name AS created_by_name
 FROM orders o
 LEFT JOIN customers c ON o.customer_id = c.id
+LEFT JOIN students st ON o.student_id = st.id
 LEFT JOIN users u ON o.created_by = u.id;
 
 -- Daily sales view
@@ -170,7 +186,7 @@ CREATE OR REPLACE VIEW v_daily_sales AS
 SELECT
   DATE(o.order_date) AS sale_date,
   COUNT(o.id) AS total_orders,
-  SUM(o.total_amoun`t) AS total_revenue
+  SUM(o.total_amount) AS total_revenue
 FROM orders o
 WHERE o.status != 'cancelled'
 GROUP BY DATE(o.order_date)
@@ -222,20 +238,20 @@ INSERT INTO customers (name, email, phone, address) VALUES
 ('Eve Davis', 'eve@example.com', '555-0105', '654 Maple Dr');
 
 -- Sample food items
-INSERT INTO food_items (name, category, price, description) VALUES
-('Caesar Salad', 'appetizer', 8.99, 'Fresh romaine lettuce with caesar dressing'),
-('Tomato Soup', 'appetizer', 5.99, 'Creamy tomato soup with croutons'),
-('Grilled Chicken', 'main_course', 14.99, 'Grilled chicken breast with vegetables'),
-('Pasta Alfredo', 'main_course', 12.99, 'Creamy alfredo pasta with parmesan'),
-('Beef Burger', 'main_course', 11.99, 'Classic beef burger with fries'),
-('Fish and Chips', 'main_course', 13.99, 'Battered fish with golden fries'),
-('Chocolate Cake', 'dessert', 6.99, 'Rich chocolate layer cake'),
-('Ice Cream Sundae', 'dessert', 5.49, 'Vanilla ice cream with toppings'),
-('Fresh Juice', 'beverage', 4.99, 'Freshly squeezed orange juice'),
-('Coffee', 'beverage', 3.49, 'Hot brewed coffee'),
-('Tea', 'beverage', 2.99, 'Assorted tea varieties'),
-('French Fries', 'snack', 4.49, 'Crispy golden french fries'),
-('Spring Rolls', 'snack', 6.49, 'Vegetable spring rolls with dipping sauce');
+INSERT INTO food_items (name, category, type, price, description) VALUES
+('Caesar Salad', 'appetizer', 'veg', 8.99, 'Fresh romaine lettuce with caesar dressing'),
+('Tomato Soup', 'appetizer', 'veg', 5.99, 'Creamy tomato soup with croutons'),
+('Grilled Chicken', 'main_course', 'non-veg', 14.99, 'Grilled chicken breast with vegetables'),
+('Pasta Alfredo', 'main_course', 'veg', 12.99, 'Creamy alfredo pasta with parmesan'),
+('Beef Burger', 'main_course', 'non-veg', 11.99, 'Classic beef burger with fries'),
+('Fish and Chips', 'main_course', 'non-veg', 13.99, 'Battered fish with golden fries'),
+('Chocolate Cake', 'dessert', 'veg', 6.99, 'Rich chocolate layer cake'),
+('Ice Cream Sundae', 'dessert', 'veg', 5.49, 'Vanilla ice cream with toppings'),
+('Fresh Juice', 'beverage', 'veg', 4.99, 'Freshly squeezed orange juice'),
+('Coffee', 'beverage', 'veg', 3.49, 'Hot brewed coffee'),
+('Tea', 'beverage', 'veg', 2.99, 'Assorted tea varieties'),
+('French Fries', 'snack', 'veg', 4.49, 'Crispy golden french fries'),
+('Spring Rolls', 'snack', 'veg', 6.49, 'Vegetable spring rolls with dipping sauce');
 
 -- Sample suppliers
 INSERT INTO suppliers (name, contact_person, email, phone, address) VALUES

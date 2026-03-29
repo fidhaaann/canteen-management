@@ -7,7 +7,18 @@ const router = express.Router();
 // GET /api/food-items
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM food_items ORDER BY category, name');
+    const { type } = req.query;
+    let query = 'SELECT * FROM food_items';
+    const params = [];
+    
+    if (type) {
+      query += ' WHERE type = ?';
+      params.push(type);
+    }
+    
+    query += ' ORDER BY category, name';
+    
+    const [rows] = await pool.query(query, params);
     res.json(rows);
   } catch (err) {
     console.error('Get food items error:', err);
@@ -30,14 +41,14 @@ router.get('/:id', authenticateToken, async (req, res) => {
 // POST /api/food-items
 router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { name, category, price, description, is_available } = req.body;
+    const { name, category, type, price, description, is_available } = req.body;
     if (!name || !category || price == null) {
       return res.status(400).json({ error: 'Name, category, and price are required' });
     }
 
     const [result] = await pool.query(
-      'INSERT INTO food_items (name, category, price, description, is_available) VALUES (?, ?, ?, ?, ?)',
-      [name, category, price, description || null, is_available !== false]
+      'INSERT INTO food_items (name, category, type, price, description, is_available) VALUES (?, ?, ?, ?, ?, ?)',
+      [name, category, type || 'veg', price, description || null, is_available !== false]
     );
     const [newItem] = await pool.query('SELECT * FROM food_items WHERE id = ?', [result.insertId]);
     res.status(201).json(newItem[0]);
@@ -50,14 +61,14 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
 // PUT /api/food-items/:id
 router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { name, category, price, description, is_available } = req.body;
+    const { name, category, type, price, description, is_available } = req.body;
     if (!name || !category || price == null) {
       return res.status(400).json({ error: 'Name, category, and price are required' });
     }
 
     await pool.query(
-      'UPDATE food_items SET name = ?, category = ?, price = ?, description = ?, is_available = ? WHERE id = ?',
-      [name, category, price, description || null, is_available !== false, req.params.id]
+      'UPDATE food_items SET name = ?, category = ?, type = ?, price = ?, description = ?, is_available = ? WHERE id = ?',
+      [name, category, type || 'veg', price, description || null, is_available !== false, req.params.id]
     );
     const [updated] = await pool.query('SELECT * FROM food_items WHERE id = ?', [req.params.id]);
     if (updated.length === 0) return res.status(404).json({ error: 'Food item not found' });

@@ -16,20 +16,36 @@ const loginLimiter = rateLimit({
 // POST /api/auth/login
 router.post('/login', loginLimiter, async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, role } = req.body;
     if (!username || !password) {
       return res.status(400).json({ error: 'Username and password required' });
     }
 
-    const [rows] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
-    if (rows.length === 0) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    let user;
+    if (role === 'student') {
+      const [rows] = await pool.query('SELECT * FROM students WHERE register_number = ?', [username]);
+      if (rows.length === 0) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+      user = rows[0];
+      user.username = user.register_number; // map for consistency
+      user.role = 'student';
+    } else {
+      const [rows] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
+      if (rows.length === 0) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+      user = rows[0];
     }
 
-    const user = rows[0];
     const validPassword = await bcrypt.compare(password, user.password_hash);
     if (!validPassword) {
       return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Ensure role matches for staff/admin
+    if (role && role !== 'student' && user.role !== role) {
+      return res.status(401).json({ error: 'Invalid role for user' });
     }
 
     const token = jwt.sign(
@@ -77,6 +93,30 @@ router.post('/register', authenticateToken, async (req, res) => {
       return res.status(409).json({ error: 'Username already exists' });
     }
     console.error('Register error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/auth/student-register (public)
+router.post('/student-register', async (req, res) => {
+  try {
+    const { register_number, password, fullName } = req.body;
+    if (!register_number || !password || !fullName) {
+      return res.status(400).json({ error: 'All fields required' });
+    }
+
+    const hash = await bcrypt.hash(password, 10);
+    const [result] = await pool.query(
+      'INSERT INTO students (register_number, password_hash, full_name) VALUES (?, ?, ?)',
+      [register_number, hash, fullName]
+    );
+
+    res.status(201).json({ id: result.insertId, register_number, fullName, role: 'student' });
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ error: 'Register number already exists' });
+    }
+    console.error('Student register error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });

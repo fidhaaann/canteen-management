@@ -10,6 +10,7 @@ const orderRoutes = require('./routes/orders');
 const supplierRoutes = require('./routes/suppliers');
 const stockRoutes = require('./routes/stock');
 const reportRoutes = require('./routes/reports');
+const studentRoutes = require('./routes/students');
 
 const app = express();
 app.use(cors());
@@ -23,6 +24,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/suppliers', supplierRoutes);
 app.use('/api/stock', stockRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/students', studentRoutes);
 
 app.get('/', (req, res) => res.send('Canteen Management Backend Running'));
 
