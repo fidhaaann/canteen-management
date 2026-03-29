@@ -4,11 +4,13 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper
 } from '@mui/material';
-import { Assessment, AttachMoney, TrendingUp } from '@mui/icons-material';
+import { Assessment, CurrencyRupee, TrendingUp } from '@mui/icons-material';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import api from '../../api';
+
+const formatINR = (value) => `₹${Number(value || 0).toFixed(2)}`;
 
 export default function StudentReport() {
   const [reportData, setReportData] = useState(null);
@@ -53,9 +55,9 @@ export default function StudentReport() {
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Box>
                   <Typography variant="body2" sx={{ opacity: 0.8, fontWeight: 700 }}>Total Spent</Typography>
-                  <Typography variant="h3">${parseFloat(summary.total_spent).toFixed(2)}</Typography>
+                  <Typography variant="h3">{formatINR(summary.total_spent)}</Typography>
                 </Box>
-                <AttachMoney sx={{ fontSize: 48, opacity: 0.3 }} />
+                <CurrencyRupee sx={{ fontSize: 48, opacity: 0.3 }} />
               </Box>
             </CardContent>
           </Card>
@@ -87,9 +89,9 @@ export default function StudentReport() {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                       <YAxis />
-                      <Tooltip formatter={(value) => `$${value}`} />
+                      <Tooltip formatter={(value) => formatINR(value)} />
                       <Legend />
-                      <Bar dataKey="spent" name="Amount Spent ($)" fill="#C64B33" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="spent" name="Amount Spent (₹)" fill="#C64B33" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -122,7 +124,7 @@ export default function StudentReport() {
                           <TableCell>{row.category}</TableCell>
                           <TableCell align="right">{row.total_quantity}</TableCell>
                           <TableCell align="right" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                            ${parseFloat(row.total_spent).toFixed(2)}
+                            {formatINR(row.total_spent)}
                           </TableCell>
                         </TableRow>
                       ))}

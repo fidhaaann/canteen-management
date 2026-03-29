@@ -11,6 +11,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 
+const formatINR = (value) => `₹${Number(value || 0).toFixed(2)}`;
+
 export default function StudentMenu() {
   const [foodItems, setFoodItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -153,7 +155,7 @@ export default function StudentMenu() {
                 <Box sx={{ display: 'flex', gap: 1, mb: 1, flexWrap: 'wrap', alignItems: 'center' }}>
                   <Chip icon={<LocalDining sx={{ fontSize: 14 }} />} label={categoryLabels[item.category] || item.category} size="small" sx={{ height: 24, fontSize: '0.65rem' }} />
                   <Typography variant="subtitle1" sx={{ fontWeight: 'bold', ml: 'auto', color: 'primary.main' }}>
-                    ${parseFloat(item.price).toFixed(2)}
+                    {formatINR(item.price)}
                   </Typography>
                 </Box>
               </CardContent>
@@ -214,7 +216,7 @@ export default function StudentMenu() {
                       <Box>
                         <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>{item.name}</Typography>
                         <Typography variant="caption" color="text.secondary">
-                          ${parseFloat(item.price).toFixed(2)} x {item.quantity}
+                          {formatINR(item.price)} x {item.quantity}
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -232,7 +234,7 @@ export default function StudentMenu() {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
               <Typography variant="h6">Total</Typography>
               <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                ${cartTotal.toFixed(2)}
+                {formatINR(cartTotal)}
               </Typography>
             </Box>
             <Button

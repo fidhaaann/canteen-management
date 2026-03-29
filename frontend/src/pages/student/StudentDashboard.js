@@ -8,6 +8,8 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 import { useAuth } from '../../context/AuthContext';
 
+const formatINR = (value) => `₹${Number(value || 0).toFixed(2)}`;
+
 export default function StudentDashboard() {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -58,7 +60,7 @@ export default function StudentDashboard() {
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Box>
                   <Typography variant="body2" sx={{ opacity: 0.8, fontWeight: 700 }}>Total Spent</Typography>
-                  <Typography variant="h4">${report?.total_spent || '0.00'}</Typography>
+                  <Typography variant="h4">{formatINR(report?.total_spent)}</Typography>
                 </Box>
                 <Receipt sx={{ fontSize: 36, opacity: 0.3 }} />
               </Box>

@@ -7,6 +7,8 @@ import {
 import { ConfirmationNumber, LocalShipping, CheckCircle, SearchOff } from '@mui/icons-material';
 import api from '../../api';
 
+const formatINR = (value) => `₹${Number(value || 0).toFixed(2)}`;
+
 export default function StudentOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -101,7 +103,7 @@ export default function StudentOrders() {
                     </Typography>
                   </Box>
                   <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1.5 }}>
-                    Total: ${parseFloat(order.total_amount).toFixed(2)}
+                    Total: {formatINR(order.total_amount)}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     <Button variant="outlined" size="small" fullWidth onClick={() => viewDetails(order)}>
@@ -153,7 +155,7 @@ export default function StudentOrders() {
                       secondary={item.category}
                     />
                     <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                      ${parseFloat(item.subtotal).toFixed(2)}
+                      {formatINR(item.subtotal)}
                     </Typography>
                   </ListItem>
                 ))}
@@ -162,7 +164,7 @@ export default function StudentOrders() {
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography variant="h6">Total Bill</Typography>
                 <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
-                  ${parseFloat(selectedOrder?.total_amount || 0).toFixed(2)}
+                  {formatINR(selectedOrder?.total_amount)}
                 </Typography>
               </Box>
             </>

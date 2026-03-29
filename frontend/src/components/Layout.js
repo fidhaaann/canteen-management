@@ -15,7 +15,7 @@ import { useThemeMode } from '../context/ThemeContext';
 
 const DRAWER_WIDTH = 260;
 
-const menuItems = [
+const staffMenuItems = [
   { text: 'Dashboard', icon: <Dashboard />, path: '/' },
   { text: 'Customers', icon: <People />, path: '/customers' },
   { text: 'Food Items', icon: <Restaurant />, path: '/food-items' },
@@ -23,6 +23,13 @@ const menuItems = [
   { text: 'Suppliers', icon: <LocalShipping />, path: '/suppliers' },
   { text: 'Stock', icon: <Inventory />, path: '/stock' },
   { text: 'Reports', icon: <Assessment />, path: '/reports', adminOnly: true },
+];
+
+const studentMenuItems = [
+  { text: 'Dashboard', icon: <Dashboard />, path: '/student' },
+  { text: 'Menu', icon: <Restaurant />, path: '/student/menu' },
+  { text: 'Orders', icon: <ShoppingCart />, path: '/student/orders' },
+  { text: 'My Report', icon: <Assessment />, path: '/student/report' },
 ];
 
 export default function Layout() {
@@ -110,9 +117,9 @@ export default function Layout() {
     if (isMobile) setDrawerOpen(false);
   };
 
-  const filteredMenuItems = menuItems.filter(
-    (item) => !item.adminOnly || user?.role === 'admin'
-  );
+  const filteredMenuItems = user?.role === 'student'
+    ? studentMenuItems
+    : staffMenuItems.filter((item) => !item.adminOnly || user?.role === 'admin');
 
   const drawerContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -150,8 +157,8 @@ export default function Layout() {
       <Divider />
       <Box sx={{ p: 2 }}>
         <Chip
-          label={user?.role === 'admin' ? 'Admin' : 'Staff'}
-          color={user?.role === 'admin' ? 'primary' : 'default'}
+          label={user?.role === 'admin' ? 'Admin' : user?.role === 'student' ? 'Student' : 'Staff'}
+          color={user?.role === 'admin' ? 'primary' : user?.role === 'student' ? 'secondary' : 'default'}
           size="small"
           sx={{ fontWeight: 600 }}
         />
